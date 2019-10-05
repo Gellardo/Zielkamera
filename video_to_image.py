@@ -6,11 +6,15 @@ import numpy as np
 
 def processVideo(video, offset=100, finish_width=2, progress=False):
     cap = cv2.VideoCapture(video)
+    print(f'frames: {cap.get(cv2.CAP_PROP_FRAME_COUNT)}, fps: {cap.get(cv2.CAP_PROP_FPS)}, ' +
+            f' video length: {cap.get(cv2.CAP_PROP_FRAME_COUNT)/cap.get(cv2.CAP_PROP_FPS):.2f}s')
     final = None
+    frames = 0
     while True:
         ret, frame = cap.read()
 
         if ret:
+            frames+=1
             finish_line = frame[:,offset:offset+finish_width]
             if final is None:
                 final = np.array(finish_line)
@@ -32,7 +36,9 @@ def processVideo(video, offset=100, finish_width=2, progress=False):
     if progress:
         cv2.imshow("final",final)
         cv2.waitKey(2000)
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
+
+    print(f'processed {frames} frames')
     return final
 
 
@@ -45,4 +51,5 @@ if __name__ == '__main__':
     parser.add_argument('--progress', default=False, action='store_true', help='show images being processed')
 
     args = parser.parse_args()
-    processVideo(args.video, offset=args.finish_offset, finish_width=args.finish_width, progress=args.progress)
+    image = processVideo(args.video, offset=args.finish_offset, finish_width=args.finish_width, progress=args.progress)
+    cv2.imwrite(args.image,image)
